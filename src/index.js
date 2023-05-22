@@ -29,14 +29,17 @@ app.set('views', __dirname + '/src/views');
 io.on('connection', (socket) => {
     console.log('Nuevo cliente conectado');
   
-    // Evento para agregar un producto
-    socket.on('addProduct', (product) => {
-      // Lógica para agregar el producto
-      // ...
+    // Manejador para la ruta POST del formulario
+app.post('/productos', (req, res) => {
+    // Lógica para procesar los datos del formulario
   
-      // Emitir el evento 'productAdded' a todos los clientes conectados
-      io.emit('productAdded', product);
-    });
+    // Emitir el evento a través de websockets
+    io.emit('addProduct', allProducts);
+    
+  
+    // Enviar una respuesta al cliente HTTP
+    res.status(200).send('Producto agregado exitosamente');
+  });
   
     // Evento para eliminar un producto
     socket.on('deleteProduct', (productId) => {
@@ -59,6 +62,7 @@ app.use(express.static(path.join(path.resolve(), 'public')));
 app.use('/', views)
 app.use("/api/products", ProductRouter)
 app.use("/api/cart", CartRouter)
+app.use("/realTimeProducts", views)
 
 app.get("/", async(req,res)=>{
     let allProducts= await product.getProducts()
