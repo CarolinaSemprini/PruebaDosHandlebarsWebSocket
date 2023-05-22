@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Real Time Products</title>
+</head>
+<>
+  <h1>Productos en tiempo real</h1>
+  
+
+<form id="productForm">
+  <div>
+    <label for="title">Título:</label>
+    <input type="text" id="title" name="title" required>
+  </div>
+  <div>
+    <label for="description">Descripción:</label>
+    <textarea id="description" name="description" required></textarea>
+  </div>
+  <div>
+    <label for="code">Código:</label>
+    <input type="text" id="code" name="code" required>
+  </div>
+  <div>
+    <label for="price">Precio:</label>
+    <input type="number" id="price" name="price" step="0.01" required>
+  </div>
+  <div>
+    <label for="stock">Stock:</label>
+    <input type="number" id="stock" name="stock" required>
+  </div>
+  <div>
+    <label for="category">Categoría:</label>
+    <input type="text" id="category" name="category" required>
+  </div>
+  <div>
+    <label for="thumbnails">Imágenes:</label>
+    <input type="file" id="thumbnails" name="thumbnails" multiple required>
+  </div>
+  <button type="submit">Agregar producto</button>
+</form>
+
+<ul>
+  {{#each products}}
+  <li>
+    <h2>{{this.title}}</h2>
+    <p>{{this.description}}</p>
+    <p>{{this.code}}</p>
+    <p>{{this.price}}</p>
+    <p>{{this.stock}}</p>
+    <p>{{this.category}}</p>
+    <p>{{this.thumbnails}}</p>
+    <button class="deleteProduct" data-id="{{this.id}}">Eliminar</button>
+  </li>
+  {{/each}}
+</ul>
+
+<script>
+  // Lógica para enviar los datos del formulario a través de WebSockets
+  const form = document.getElementById('productForm');
+  form.addEventListener('submit', (event) => {
+    event.preventDefault();
+    const formData = new FormData(form);
+    const productData = Object.fromEntries(formData.entries());
+    // Enviar los datos del producto a través de WebSockets
+    // ...
+  });
+
+  // Lógica para eliminar un producto a través de WebSockets
+  const deleteButtons = document.querySelectorAll('.deleteProduct');
+  deleteButtons.forEach((button) => {
+    button.addEventListener('click', () => {
+      const productId = button.dataset.id;
+      // Enviar el ID del producto a eliminar a través de WebSockets
+      // ...
+    });
+  });
+</script>
+<script src="/src/serverSocket.js"></script>
+</body>
+</html>
