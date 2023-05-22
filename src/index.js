@@ -12,6 +12,7 @@ import http from 'http';
 const app= express()
 const server = http.createServer(app);
 const io = new Server(server);
+
 const PORT=8080
 const product=new ProductManager();
 
@@ -25,7 +26,32 @@ app.engine('handlebars', handlebars.engine());
 app.set('view engine', 'handlebars');
 app.set('views', __dirname + '/src/views');
 
-
+io.on('connection', (socket) => {
+    console.log('Nuevo cliente conectado');
+  
+    // Evento para agregar un producto
+    socket.on('addProduct', (product) => {
+      // Lógica para agregar el producto
+      // ...
+  
+      // Emitir el evento 'productAdded' a todos los clientes conectados
+      io.emit('productAdded', product);
+    });
+  
+    // Evento para eliminar un producto
+    socket.on('deleteProduct', (productId) => {
+      // Lógica para eliminar el producto
+      // ...
+  
+      // Emitir el evento 'productDeleted' a todos los clientes conectados
+      io.emit('productDeleted', productId);
+    });
+  
+    // Manejar la desconexión del cliente
+    socket.on('disconnect', () => {
+      console.log('Cliente desconectado');
+    });
+  });
 
 // Middleware para el manejo de archivos estáticos
 app.use(express.static(path.join(path.resolve(), 'public')));
@@ -72,4 +98,5 @@ app.get("/", async(req,res)=>{
 server.listen(PORT, () => {
     console.log(`Servidor escuchando en el puerto ${PORT}`);
   });
+
 

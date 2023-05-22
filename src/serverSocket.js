@@ -1,67 +1,37 @@
 import { Server } from 'socket.io';
-import ProductManager from './controllers/ProductManager.js'
+import ProductManager from './controllers/ProductManager.js';
 
-const productManager = new  ProductManager("./src/models/products.json");
-
-// Crear el servidor HTTP utilizando Express
-const server = createServer(app);
-
-// Crear el servidor de WebSockets utilizando el servidor HTTP
+// Crear una instancia de Socket.io y adjuntarla al servidor HTTP existente
 const io = new Server(server);
 
-// Configurar Handlebars como el motor de plantillas
-app.engine('handlebars', exphbs());
-app.set('view engine', 'handlebars');
+// Crear una instancia de ProductManager
+const productManager = new ProductManager();
 
-// Manejar la conexión de WebSockets
+// Manejar la conexión de un cliente WebSocket
 io.on('connection', (socket) => {
-    console.log('Nuevo cliente conectado');
+  console.log('Cliente conectado');
 
-    // Evento para agregar un producto
-  socket.on('addProduct', async (productData) => {
-    try {
-      const result = await productManager.addProducts(productData);
-      io.emit('productAdded', result);
-    } catch (error) {
-      io.emit('productError', error.message);
-    }
+  // Enviar todos los productos al cliente cuando se conecte
+  socket.emit('products', productManager.getProducts());
+
+  // Manejar el evento de agregar un producto
+  socket.on('addProduct', (productData) => {
+    const newProduct = productManager.addProduct(productData);
+
+    // Enviar el producto agregado a todos los clientes conectados
+    io.emit('productAdded', newProduct);
   });
 
-  // Evento para eliminar un producto
-  socket.on('deleteProduct', async (productId) => {
-    try {
-      const result = await productManager.deleteProducts(productId);
-      io.emit('productDeleted', result);
-    } catch (error) {
-      io.emit('productError', error.message);
-    }
-  });
-  
-    // Manejar los eventos de creación y eliminación de productos
-    socket.on('createProduct', async (product) => {
-        await productManager.addProducts(product)
-        generarProductList()
-        console.log('Producto creado:', product);
-      // Lógica para crear un nuevo producto
-    });
-  
-    socket.on('deleteProduct', async(productId) => {
-        await productManager.deleteProducts(productId)
-        generarProductList()
-      console.log('Producto eliminado:', productId);
-      // Lógica para eliminar un producto
-    });
-  
-    // Emitir la lista de productos actualizada
-    const generarProductList = async () => {
-        const products = await productManager.getProducts();
-        socket.emit("productList", products);
-      };
-      generarProductList()
+  // Manejar el evento de eliminar un producto
+  socket.on('deleteProduct', (productId) => {
+    const deletedProduct = productManager.deleteProduct(productId);
 
-      socket.on("disconnect", () => {
-        console.log("Client disconnected");
-      });
+    // Enviar el producto eliminado a todos los clientes conectados
+    io.emit('productDeleted', deletedProduct);
   });
-  
-  export default server
+
+  // Manejar la desconexión de un cliente WebSocket
+  socket.on('disconnect', () => {
+    console.log('Cliente desconectado');
+  });
+});
