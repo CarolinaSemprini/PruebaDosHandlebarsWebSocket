@@ -1,37 +1,24 @@
-import { Server } from 'socket.io';
-import ProductManager from './controllers/ProductManager.js';
+import { io } from 'socket.io-client'
 
-// Crear una instancia de Socket.io y adjuntarla al servidor HTTP existente
-const io = new Server(server);
 
-// Crear una instancia de ProductManager
-const productManager = new ProductManager();
+const configureWebSockets = (io) => {
+  io.on("connection", (socket) => {
+    console.log("Nuevo cliente conectado");
 
-// Manejar la conexión de un cliente WebSocket
-io.on('connection', (socket) => {
-  console.log('Cliente conectado');
+    // Escuchar el evento de eliminación de un producto
+    socket.on("deleteProduct", (productId) => {
+      // Lógica para eliminar el producto
+      // ...
 
-  // Enviar todos los productos al cliente cuando se conecte
-  socket.emit('products', productManager.getProducts());
+      // Emitir el evento 'productDeleted' a todos los clientes conectados
+      io.emit("productDeleted", productId);
+    });
 
-  // Manejar el evento de agregar un producto
-  socket.on('addProduct', (productData) => {
-    const newProduct = productManager.addProduct(productData);
-
-    // Enviar el producto agregado a todos los clientes conectados
-    io.emit('productAdded', newProduct);
+    // Manejar la desconexión del cliente
+    socket.on("disconnect", () => {
+      console.log("Cliente desconectado");
+    });
   });
+};
 
-  // Manejar el evento de eliminar un producto
-  socket.on('deleteProduct', (productId) => {
-    const deletedProduct = productManager.deleteProduct(productId);
-
-    // Enviar el producto eliminado a todos los clientes conectados
-    io.emit('productDeleted', deletedProduct);
-  });
-
-  // Manejar la desconexión de un cliente WebSocket
-  socket.on('disconnect', () => {
-    console.log('Cliente desconectado');
-  });
-});
+export default configureWebSockets;
